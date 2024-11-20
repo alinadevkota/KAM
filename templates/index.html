@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive App</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        #chat2 .form-control {
+            border-color: transparent;
+        }
+
+        #chat2 .form-control:focus {
+            border-color: transparent;
+            box-shadow: inset 0px 0px 0px 1px transparent;
+        }
+
+        .divider:after,
+        .divider:before {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #eee;
+        }
+
+        .chat-messages {
+            position: relative;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        #chat2 {
+            width: 100%;
+            height: 100%;
+        }
+        #chat2 .card-body {
+            position: relative;
+            overflow-y: auto;
+            max-height: 70vh; /* Or any appropriate height */
+            /* height: calc(100% - 90px); Adjusted based on your card height */
+        }
+    </style>
+    <!-- Include jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+</head>
+<body>
+    <!-- <div class="container mt-5">
+        <div class="card">
+            <div class="card-header text-center bg-primary text-white">
+                <h1>Interactive App</h1>
+            </div>
+            <div class="card-body">
+                <div id="chat2" class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center p-3">
+                        <h5 class="mb-0">Chat</h5>
+                        <button type="button" class="btn btn-primary btn-sm">Let's Chat App</button>
+                    </div>
+                    <div class="card-body chat-messages">
+                        Dynamic chat messages will appear here -->
+                        <!-- {% if messages %}
+                            {% for message in messages %}
+                                <div class="d-flex flex-row {{ message.sender }}">
+                                    {% if message.sender == 'start' %}
+                                        <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp"
+                                             alt="avatar 1" style="width: 45px; height: 100%;">
+                                    {% endif %}
+                                    <div>
+                                        <p class="small p-2 ms-3 mb-1 rounded-3 {{ message.style }}">{{ message.text }}</p>
+                                        <p class="small ms-3 mb-3 rounded-3 text-muted">{{ message.time }}</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div class="card-footer text-muted d-flex justify-content-start align-items-center p-3">
+                        <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp" alt="avatar 3" style="width: 40px; height: 100%;">
+                        <form action="/process" method="POST" class="d-flex w-100">
+                            <input type="text" class="form-control form-control-lg me-2" id="exampleFormControlInput1" name="instruction" placeholder="Type message">
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
+                        </form>                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> -->
+
+    <section>
+        <div class="container py-5">
+          <div class="row d-flex justify-content-center">
+            <div class="col-12">
+      
+              <!-- Card with dynamic width and height -->
+              <div class="card" id="chat2" style="width: 70vw; height: 70vh;">
+      
+                <!-- Card Header -->
+                <div class="card-header d-flex justify-content-between align-items-center p-3">
+                  <h5 class="mb-0">Teaching Assistant</h5>
+                  <!-- <button type="button" class="btn btn-primary btn-sm">Let's Chat App</button> -->
+                </div>
+      
+                <!-- Card Body -->
+                <div class="card-body" style="position: relative; overflow-y: auto; height: calc(100% - 90px);">
+                  <!-- Displaying User and Bot Messages -->
+                  {% for message in messages %}
+                    {% if message.sender == "start" %}
+                      <!-- Bot's response (robot icon) -->
+                      <div class="d-flex flex-row justify-content-start mb-4">
+                        <i class="fas fa-robot" style="font-size: 40px; color: #6c757d;"></i>
+                        <div>
+                          <p class="small p-2 ms-3 mb-1 rounded-3 bg-body-tertiary">{{ message.text }}</p>
+                          <p class="small ms-3 mb-3 rounded-3 text-muted">{{ message.time }}</p>
+                        </div>
+                      </div>
+                    {% else %}
+                      <!-- User's message -->
+                      <div class="d-flex flex-row justify-content-end mb-4 pt-1">
+                        <div>
+                          <p class="small p-2 me-3 mb-1 text-white rounded-3 bg-primary">{{ message.text }}</p>
+                          <p class="small me-3 mb-3 rounded-3 text-muted d-flex justify-content-end">{{ message.time }}</p>
+                        </div>
+                        <!-- <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava4-bg.webp" alt="avatar" style="width: 45px; height: 100%;"> -->
+                        <i class="fas fa-user" style="font-size: 40px; color: #6c757d;"></i>
+                      </div>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+      
+                <!-- Card Footer with input form -->
+                <div class="card-footer text-muted d-flex justify-content-start align-items-center p-3">
+                    <i class="fas fa-user" style="font-size: 40px; color: #6c757d;"></i>
+                  <!-- <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp" alt="avatar" style="width: 40px; height: 100%;"> -->
+                  
+                  <!-- Form for submitting messages -->
+                  <form action="/" method="POST" class="d-flex w-100">
+                    <input type="text" class="form-control form-control-lg me-2" name="instruction" placeholder="Type message" required autocomplete="off">
+                    <button type="submit" class="btn btn-primary ms-3">
+                      <i class="fas fa-paper-plane"></i>
+                    </button>
+                  </form>
+                </div>
+      
+              </div>
+      
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      
+
+    <!-- Bootstrap JS Bundle (with Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Store IDs of already displayed messages
+        let displayedMessages = new Set();
+    
+        // Automatically scroll to the bottom when a new message is added
+        function scrollToBottom() {
+            const chatBody = document.querySelector('#chat2 .card-body');
+            setTimeout(() => {
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }, 50); // Slight delay to ensure DOM rendering
+        }
+    
+        $(document).ready(function() {
+            // When the form is submitted
+            $('form').on('submit', function(e) {
+                e.preventDefault(); // Prevent form from reloading the page
+    
+                var message = $('input[name="instruction"]').val(); // Get the user input
+                if (message.trim() === '') return;
+    
+                // Append user message to the chat (without refreshing)
+                $('#chat2 .card-body').append(`
+                    <div class="d-flex flex-row justify-content-end mb-4 pt-1">
+                        <div>
+                            <p class="small p-2 me-3 mb-1 text-white rounded-3 bg-primary">${message}</p>
+                            <p class="small me-3 mb-3 rounded-3 text-muted d-flex justify-content-end">Just now</p>
+                        </div>
+                        <i class="fas fa-user" style="font-size: 40px; color: #6c757d;"></i>
+                    </div>
+                `);
+    
+                // Clear the input field
+                $('input[name="instruction"]').val('');
+    
+                // Scroll to the bottom of the chat box
+                scrollToBottom();
+    
+                // Send the message to the server asynchronously using AJAX
+                $.ajax({
+                    type: 'POST',
+                    url: '/',
+                    data: {
+                        instruction: message
+                    },
+                    success: function(response) {
+                        // Assuming 'response' contains updated messages, including bot's response
+                        var newMessages = response.messages;
+    
+                        // Append only new bot messages
+                        newMessages.forEach(function(message) {
+                            if (!displayedMessages.has(message.id)) { // Check if already displayed
+                                if (message.sender === "start") {
+                                    // Bot's response
+                                    $('#chat2 .card-body').append(`
+                                        <div class="d-flex flex-row justify-content-start mb-4">
+                                            <i class="fas fa-robot" style="font-size: 40px; color: #6c757d;"></i>
+                                            <div>
+                                                <p class="small p-2 ms-3 mb-1 rounded-3 bg-body-tertiary">${message.text}</p>
+                                                <p class="small ms-3 mb-3 rounded-3 text-muted">${message.time}</p>
+                                            </div>
+                                        </div>
+                                    `);
+                                    // Mark this message as displayed
+                                    displayedMessages.add(message.id);
+                                }
+                            }
+                        });
+    
+                        // Scroll to the bottom after updating the messages
+                        scrollToBottom();
+                    },
+                    error: function() {
+                        console.error('Failed to send or receive messages.');
+                    }
+                });
+            });
+        });
+    </script>
+    
+    
+      
+</body>
+</html>

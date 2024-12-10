@@ -85,4 +85,4 @@ def get_response(query, chain):
     
     # Wrapping the text for better output in Jupyter Notebook
     wrapped_text = textwrap.fill(response['result'], width=100)
-    print(wrapped_text)
+    return wrapped_text

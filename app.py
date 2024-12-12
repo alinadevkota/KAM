@@ -27,16 +27,19 @@ def format_message(message):
     # Replace **text** with <strong>text</strong>
     message = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', message)
 
-    # Replace * text with <li>text</li> for bullet points and wrap <ul> around them
+    # Replace * text with <li>text</li> for bullet points
     message = re.sub(r'^\* (.+)$', r'<li>\1</li>', message, flags=re.MULTILINE)
-    message = re.sub(r'(<li>.*</li>)', r'<ul>\1</ul>', message)
+    
+    # Wrap all <li> elements with a single <ul>, ensuring proper list structure
+    if '<li>' in message:
+        message = re.sub(r'(<li>.*?</li>(?:\n|$))+', lambda m: f'<ul>{m.group(0).strip()}</ul>', message, flags=re.DOTALL)
 
     return message
 
 @app.route('/', methods=['GET', 'POST'])
 def chat():
     global chain, llm, embedding_model, retriever  # Declare global variables
-    
+
     if request.method == 'POST':
         user_input = request.form.get('instruction', '')
         file = request.files.get('file')

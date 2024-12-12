@@ -33,8 +33,22 @@ def chat():
         if file:
             print("File Uploaded: ", file.filename)
 
+        # Case 0: Invalid filetype
+        if file and not allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+
+            # Add user message indicating file upload
+            user_message = f"File uploaded: {filename}"
+            id1 = str(uuid.uuid4())
+            messages.append({"id": id1, "sender": "user", "text": user_message, "time": get_current_time()})
+
+            # Add bot message confirming the file upload and reindex
+            bot_message = f"Invalid file type. Only PDF files are allowed."
+            id2 = str(uuid.uuid4())
+            messages.append({"id": id2, "sender": "start", "text": bot_message, "time": get_current_time()})
+
         # Case 1: Only a file is uploaded (no instruction)
-        if file and allowed_file(file.filename) and user_input.strip() == '':
+        elif file and allowed_file(file.filename) and user_input.strip() == '':
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             print(f"Embedding generation completed after file '{filename}' upload.")

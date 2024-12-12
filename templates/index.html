@@ -42,6 +42,36 @@
             max-height: 70vh; /* Or any appropriate height */
             /* height: calc(100% - 90px); Adjusted based on your card height */
         }
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+        }
+
+        .typing-indicator .dot {
+            width: 8px;
+            height: 8px;
+            margin: 0 4px;
+            background-color: #6c757d;
+            border-radius: 50%;
+            animation: blink 1.5s infinite;
+        }
+
+        .typing-indicator .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes blink {
+            0%, 80%, 100% {
+                opacity: 0;
+            }
+            40% {
+                opacity: 1;
+            }
+        }
     </style>
     <!-- Include jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -135,32 +165,30 @@
         }
     
         $(document).ready(function () {
-            // Automatically scroll to the bottom when a new message is added
             function scrollToBottom() {
                 const chatBody = document.querySelector('#chat2 .card-body');
                 setTimeout(() => {
                     chatBody.scrollTop = chatBody.scrollHeight;
-                }, 50); // Slight delay to ensure DOM rendering
+                }, 50);
             }
 
             $('form').on('submit', function (e) {
-                e.preventDefault(); // Prevent form from reloading the page
+                e.preventDefault();
 
-                var message = $('input[name="instruction"]').val(); // Get the user input
-                var file = $('input[name="file"]')[0].files[0]; // Get the file input (check for file object)
+                var message = $('input[name="instruction"]').val();
+                var file = $('input[name="file"]')[0].files[0];
 
-                if (message.trim() === '' && !file) return; // Ensure at least one input exists
+                if (message.trim() === '' && !file) return;
 
-                var formData = new FormData(this); // Create a FormData object for file uploads
+                var formData = new FormData(this);
                 if (message) {
-                    formData.append("instruction", message); // Ensure the instruction field is added
+                    formData.append("instruction", message);
                 }
 
                 if (file) {
-                    formData.append("file", file); // Append the file if it exists
+                    formData.append("file", file);
                 }
 
-                // Append user message to the chat (if a message exists)
                 if (message.trim() !== '') {
                     $('#chat2 .card-body').append(`
                         <div class="d-flex flex-row justify-content-end mb-4 pt-1">
@@ -173,7 +201,6 @@
                     `);
                 }
 
-                // If a file is uploaded, show a file acknowledgment message
                 if (file) {
                     $('#chat2 .card-body').append(`
                         <div class="d-flex flex-row justify-content-end mb-4 pt-1">
@@ -186,36 +213,35 @@
                     `);
                 }
 
-                // Add "bot is typing" indicator
+                // Add animated typing indicator
                 const typingIndicator = `
                     <div class="d-flex flex-row justify-content-start mb-4 typing-indicator">
                         <i class="fas fa-robot" style="font-size: 40px; color: #6c757d;"></i>
                         <div>
-                            <p class="small p-2 ms-3 mb-1 rounded-3 bg-body-tertiary">Bot is typing...</p>
+                            <div class="d-flex align-items-center">
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                            </div>
                         </div>
                     </div>
                 `;
                 $('#chat2 .card-body').append(typingIndicator);
 
-                // Scroll to the bottom of the chat box
                 scrollToBottom();
 
-                // Clear the input fields
                 $('input[name="instruction"]').val('');
-                $('input[name="file"]').val(''); // Clear the file input
+                $('input[name="file"]').val('');
 
-                // Send the message to the server asynchronously using AJAX
                 $.ajax({
                     type: 'POST',
-                    url: '/', // Backend endpoint to handle the form submission
+                    url: '/',
                     data: formData,
                     processData: false,
-                    contentType: false, // Necessary for FormData
+                    contentType: false,
                     success: function (response) {
-                        // Remove "bot is typing" indicator
                         $('.typing-indicator').remove();
 
-                        // Handle only the latest bot message
                         var latestBotMessage = response.messages
                             .filter(message => message.sender === "start")
                             .pop();
@@ -234,7 +260,6 @@
                         }
                     },
                     error: function () {
-                        // Remove "bot is typing" indicator in case of error
                         $('.typing-indicator').remove();
                         console.error('Failed to send or receive messages.');
                     }

@@ -48,46 +48,6 @@
 
 </head>
 <body>
-    <!-- <div class="container mt-5">
-        <div class="card">
-            <div class="card-header text-center bg-primary text-white">
-                <h1>Interactive App</h1>
-            </div>
-            <div class="card-body">
-                <div id="chat2" class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center p-3">
-                        <h5 class="mb-0">Chat</h5>
-                        <button type="button" class="btn btn-primary btn-sm">Let's Chat App</button>
-                    </div>
-                    <div class="card-body chat-messages">
-                        Dynamic chat messages will appear here -->
-                        <!-- {% if messages %}
-                            {% for message in messages %}
-                                <div class="d-flex flex-row {{ message.sender }}">
-                                    {% if message.sender == 'start' %}
-                                        <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp"
-                                             alt="avatar 1" style="width: 45px; height: 100%;">
-                                    {% endif %}
-                                    <div>
-                                        <p class="small p-2 ms-3 mb-1 rounded-3 {{ message.style }}">{{ message.text }}</p>
-                                        <p class="small ms-3 mb-3 rounded-3 text-muted">{{ message.time }}</p>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-                    </div>
-                    <div class="card-footer text-muted d-flex justify-content-start align-items-center p-3">
-                        <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp" alt="avatar 3" style="width: 40px; height: 100%;">
-                        <form action="/process" method="POST" class="d-flex w-100">
-                            <input type="text" class="form-control form-control-lg me-2" id="exampleFormControlInput1" name="instruction" placeholder="Type message">
-                            <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
-                        </form>                        
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div> -->
-
     <section>
         <div class="container py-5">
           <div class="row d-flex justify-content-center">
@@ -132,15 +92,23 @@
                 <!-- Card Footer with input form -->
                 <div class="card-footer text-muted d-flex justify-content-start align-items-center p-3">
                     <i class="fas fa-user" style="font-size: 40px; color: #6c757d;"></i>
-                  <!-- <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp" alt="avatar" style="width: 40px; height: 100%;"> -->
-                  
-                  <!-- Form for submitting messages -->
-                  <form action="/" method="POST" class="d-flex w-100">
-                    <input type="text" class="form-control form-control-lg me-2" name="instruction" placeholder="Type message" required autocomplete="off">
-                    <button type="submit" class="btn btn-primary ms-3">
-                      <i class="fas fa-paper-plane"></i>
-                    </button>
-                  </form>
+                
+                    <!-- Form for submitting messages -->
+                    <!-- <form id="chat-form" class="d-flex w-100" enctype="multipart/form-data">
+                        <input type="text" class="form-control form-control-lg me-2" name="instruction" placeholder="Type message" required autocomplete="off">
+                        <input type="file" class="form-control-file ms-3" id="file-upload" name="file">
+                        <button type="submit" class="btn btn-primary ms-3">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form> -->
+                    <form id="chat-form" action="/" method="POST" enctype="multipart/form-data" class="d-flex w-100 align-items-center">
+                        <input type="text" class="form-control form-control-sm me-2" name="instruction" placeholder="Type message" autocomplete="off">
+                        <input type="file" id="file-upload" name="file" class="form-control-sm me-2">
+                        <button type="submit" class="btn btn-primary btn-sm ms-2">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                    
                 </div>
       
               </div>
@@ -167,63 +135,70 @@
         }
     
         $(document).ready(function() {
-            // When the form is submitted
             $('form').on('submit', function(e) {
                 e.preventDefault(); // Prevent form from reloading the page
-    
+
                 var message = $('input[name="instruction"]').val(); // Get the user input
-                if (message.trim() === '') return;
-    
+                var file = $('input[name="file"]')[0].files[0]; // Get the file input (check for file object)
+
+                if (message.trim() === '' && !file) return; // Ensure at least one input exists
+
+                var formData = new FormData(this); // Create a FormData object for file uploads
+                if (message !== null) {
+                    formData.append("instruction", message); // Ensure the instruction field is added
+                }
+
+                if (file) {
+                    formData.append("file", file); // Append the file if it exists
+                }
+
                 // Append user message to the chat (without refreshing)
-                $('#chat2 .card-body').append(`
-                    <div class="d-flex flex-row justify-content-end mb-4 pt-1">
-                        <div>
-                            <p class="small p-2 me-3 mb-1 text-white rounded-3 bg-primary">${message}</p>
-                            <p class="small me-3 mb-3 rounded-3 text-muted d-flex justify-content-end">Just now</p>
+                if (message.trim() !== '') {
+                    $('#chat2 .card-body').append(`
+                        <div class="d-flex flex-row justify-content-end mb-4 pt-1">
+                            <div>
+                                <p class="small p-2 me-3 mb-1 text-white rounded-3 bg-primary">${message}</p>
+                                <p class="small me-3 mb-3 rounded-3 text-muted d-flex justify-content-end">Just now</p>
+                            </div>
+                            <i class="fas fa-user" style="font-size: 40px; color: #6c757d;"></i>
                         </div>
-                        <i class="fas fa-user" style="font-size: 40px; color: #6c757d;"></i>
-                    </div>
-                `);
-    
-                // Clear the input field
+                    `);
+                }
+
+                // Clear the input fields
                 $('input[name="instruction"]').val('');
-    
+                $('input[name="file"]').val(''); // Clear the file input
+
                 // Scroll to the bottom of the chat box
                 scrollToBottom();
-    
+
                 // Send the message to the server asynchronously using AJAX
                 $.ajax({
                     type: 'POST',
                     url: '/',
-                    data: {
-                        instruction: message
-                    },
+                    data: formData,
+                    processData: false,
+                    contentType: false, // Necessary for FormData
                     success: function(response) {
-                        // Assuming 'response' contains updated messages, including bot's response
                         var newMessages = response.messages;
-    
-                        // Append only new bot messages
-                        newMessages.forEach(function(message) {
-                            if (!displayedMessages.has(message.id)) { // Check if already displayed
-                                if (message.sender === "start") {
-                                    // Bot's response
-                                    $('#chat2 .card-body').append(`
-                                        <div class="d-flex flex-row justify-content-start mb-4">
-                                            <i class="fas fa-robot" style="font-size: 40px; color: #6c757d;"></i>
-                                            <div>
-                                                <p class="small p-2 ms-3 mb-1 rounded-3 bg-body-tertiary">${message.text}</p>
-                                                <p class="small ms-3 mb-3 rounded-3 text-muted">${message.time}</p>
-                                            </div>
-                                        </div>
-                                    `);
-                                    // Mark this message as displayed
-                                    displayedMessages.add(message.id);
-                                }
-                            }
-                        });
-    
-                        // Scroll to the bottom after updating the messages
-                        scrollToBottom();
+
+                        // Handle only the latest bot message
+                        var latestBotMessage = newMessages
+                            .filter(message => message.sender === "start")
+                            .pop();
+
+                        if (latestBotMessage) {
+                            $('#chat2 .card-body').append(`
+                                <div class="d-flex flex-row justify-content-start mb-4">
+                                    <i class="fas fa-robot" style="font-size: 40px; color: #6c757d;"></i>
+                                    <div>
+                                        <p class="small p-2 ms-3 mb-1 rounded-3 bg-body-tertiary">${latestBotMessage.text}</p>
+                                        <p class="small ms-3 mb-3 rounded-3 text-muted">${latestBotMessage.time}</p>
+                                    </div>
+                                </div>
+                            `);
+                            scrollToBottom();
+                        }
                     },
                     error: function() {
                         console.error('Failed to send or receive messages.');
@@ -231,6 +206,8 @@
                 });
             });
         });
+
+
     </script>
     
     

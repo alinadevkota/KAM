@@ -28,30 +28,74 @@ def chat():
         user_input = request.form.get('instruction', '')
         file = request.files.get('file')
 
-        if file and allowed_file(file.filename):
+        # Debugging print statements
+        print("User Input: ", user_input)
+        if file:
+            print("File Uploaded: ", file.filename)
+
+        # Case 1: Only a file is uploaded (no instruction)
+        if file and allowed_file(file.filename) and user_input.strip() == '':
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            # user_input += f" (File uploaded: {filename})"  # Append file info to the user input
+            print(f"Embedding generation completed after file '{filename}' upload.")
 
-            retriever = process_documents(folder_path, embedding_model)
-            print("***************************************************************")
-            print("embedding generation completed after file '{filename}' upload.")
+            # Reindex the file and update retriever
+            retriever = process_documents(app.config['UPLOAD_FOLDER'], embedding_model)
+            print(f"File '{filename}' indexed.")
 
-        print("================================", user_input)
-        # Generate bot's response
-        response = generate_bot_response(user_input, chain)
+            # Add user message indicating file upload
+            user_message = f"File uploaded: {filename}"
+            id1 = str(uuid.uuid4())
+            messages.append({"id": id1, "sender": "user", "text": user_message, "time": get_current_time()})
 
-        # Store the messages (user and bot)
-        id1 = str(uuid.uuid4())
-        messages.append({"id": id1, "sender": "user", "text": user_input, "time": get_current_time()})
-        id2 = str(uuid.uuid4())
-        messages.append({"id": id2, "sender": "start", "text": response, "time": get_current_time()})
+            # Add bot message confirming the file upload and reindex
+            bot_message = f"File '{filename}' has been successfully uploaded and reindexed."
+            id2 = str(uuid.uuid4())
+            messages.append({"id": id2, "sender": "start", "text": bot_message, "time": get_current_time()})
+
+        # Case 2: Only an instruction is provided (no file)
+        elif user_input.strip() != '' and not file:
+            # Follow user instruction without file
+            response = generate_bot_response(user_input, chain)
+
+            # Add user message with the instruction
+            id1 = str(uuid.uuid4())
+            messages.append({"id": id1, "sender": "user", "text": user_input, "time": get_current_time()})
+
+            # Add bot response to the instruction
+            id2 = str(uuid.uuid4())
+            messages.append({"id": id2, "sender": "start", "text": response, "time": get_current_time()})
+
+        # Case 3: Both a file and an instruction are provided
+        elif file and allowed_file(file.filename) and user_input.strip() != '':
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            print(f"Embedding generation completed after file '{filename}' upload.")
+
+            # Reindex the file and process based on the instruction
+            retriever = process_documents(app.config['UPLOAD_FOLDER'], embedding_model)
+            print(f"File '{filename}' indexed.")
+
+            # Add user message indicating file upload and instruction
+            user_message = f"File uploaded: {filename} with instruction: {user_input}"
+            id1 = str(uuid.uuid4())
+            messages.append({"id": id1, "sender": "user", "text": user_message, "time": get_current_time()})
+
+            # Generate the bot's response based on the file content and user instruction
+            response = generate_bot_response(user_input, chain)
+
+            # Add bot response
+            id2 = str(uuid.uuid4())
+            messages.append({"id": id2, "sender": "start", "text": response, "time": get_current_time()})
 
         # Check if the request is an AJAX request
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify(messages=messages)  # Return the updated messages as JSON
 
     return render_template('index.html', messages=messages)
+
+
+
 
 if __name__ == '__main__':
 

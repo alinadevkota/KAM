@@ -9,7 +9,7 @@ from utils import *
 # FRONTEND UTILS
 # Function to get the current time in HH:MM format
 def get_current_time():
-    return datetime.now().strftime("%H:%M")
+    return datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
 
 # Function to generate a bot response (customize this logic as needed)
 def generate_bot_response(user_input, chain):

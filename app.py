@@ -4,6 +4,7 @@ from datetime import datetime
 import uuid
 from utils import *
 from werkzeug.utils import secure_filename
+import re
 
 app = Flask(__name__)
 
@@ -22,6 +23,16 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def format_message(message):
+    # Replace **text** with <strong>text</strong>
+    message = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', message)
+
+    # Replace * text with <li>text</li> for bullet points and wrap <ul> around them
+    message = re.sub(r'^\* (.+)$', r'<li>\1</li>', message, flags=re.MULTILINE)
+    message = re.sub(r'(<li>.*</li>)', r'<ul>\1</ul>', message)
+
+    return message
+
 @app.route('/', methods=['GET', 'POST'])
 def chat():
     if request.method == 'POST':
@@ -35,7 +46,7 @@ def chat():
 
         # Case 0: Invalid filetype
         if file and not allowed_file(file.filename):
-            filename = secure_filename(file.filename)
+            filename = file.filename
 
             # Add user message indicating file upload
             user_message = f"File uploaded: {filename}"
@@ -101,6 +112,9 @@ def chat():
             # Add bot response
             id2 = str(uuid.uuid4())
             messages.append({"id": id2, "sender": "start", "text": response, "time": get_current_time()})
+
+        for message in messages:
+            message["text"] = format_message(message["text"])
 
         # Check if the request is an AJAX request
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':

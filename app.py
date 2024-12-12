@@ -54,7 +54,7 @@ def chat():
             filename = file.filename
 
             # Add user message indicating file upload
-            user_message = f"File uploaded: {filename}"
+            user_message = f"Uploaded file: {filename}"
             id1 = str(uuid.uuid4())
             messages.append({"id": id1, "sender": "user", "text": user_message, "time": get_current_time()})
 
@@ -75,7 +75,7 @@ def chat():
             chain = load_qa_chain(retriever, llm, prompt)
 
             # Add user message indicating file upload
-            user_message = f"File uploaded: {filename}"
+            user_message = f"Uploaded file: {filename}"
             id1 = str(uuid.uuid4())
             messages.append({"id": id1, "sender": "user", "text": user_message, "time": get_current_time()})
 
@@ -109,7 +109,7 @@ def chat():
             chain = load_qa_chain(retriever, llm, prompt)
 
             # Add user message indicating file upload and instruction
-            user_message = f"File uploaded: {filename} with instruction: {user_input}"
+            user_message = f"Uploaded file: {filename} with instruction: {user_input}"
             id1 = str(uuid.uuid4())
             messages.append({"id": id1, "sender": "user", "text": user_message, "time": get_current_time()})
 

@@ -134,8 +134,16 @@
             }, 50); // Slight delay to ensure DOM rendering
         }
     
-        $(document).ready(function() {
-            $('form').on('submit', function(e) {
+        $(document).ready(function () {
+            // Automatically scroll to the bottom when a new message is added
+            function scrollToBottom() {
+                const chatBody = document.querySelector('#chat2 .card-body');
+                setTimeout(() => {
+                    chatBody.scrollTop = chatBody.scrollHeight;
+                }, 50); // Slight delay to ensure DOM rendering
+            }
+
+            $('form').on('submit', function (e) {
                 e.preventDefault(); // Prevent form from reloading the page
 
                 var message = $('input[name="instruction"]').val(); // Get the user input
@@ -144,7 +152,7 @@
                 if (message.trim() === '' && !file) return; // Ensure at least one input exists
 
                 var formData = new FormData(this); // Create a FormData object for file uploads
-                if (message !== null) {
+                if (message) {
                     formData.append("instruction", message); // Ensure the instruction field is added
                 }
 
@@ -152,7 +160,7 @@
                     formData.append("file", file); // Append the file if it exists
                 }
 
-                // Append user message to the chat (without refreshing)
+                // Append user message to the chat (if a message exists)
                 if (message.trim() !== '') {
                     $('#chat2 .card-body').append(`
                         <div class="d-flex flex-row justify-content-end mb-4 pt-1">
@@ -165,25 +173,50 @@
                     `);
                 }
 
-                // Clear the input fields
-                $('input[name="instruction"]').val('');
-                $('input[name="file"]').val(''); // Clear the file input
+                // If a file is uploaded, show a file acknowledgment message
+                if (file) {
+                    $('#chat2 .card-body').append(`
+                        <div class="d-flex flex-row justify-content-end mb-4 pt-1">
+                            <div>
+                                <p class="small p-2 me-3 mb-1 text-white rounded-3 bg-primary">Uploaded file: ${file.name}</p>
+                                <p class="small me-3 mb-3 rounded-3 text-muted d-flex justify-content-end">Just now</p>
+                            </div>
+                            <i class="fas fa-user" style="font-size: 40px; color: #6c757d;"></i>
+                        </div>
+                    `);
+                }
+
+                // Add "bot is typing" indicator
+                const typingIndicator = `
+                    <div class="d-flex flex-row justify-content-start mb-4 typing-indicator">
+                        <i class="fas fa-robot" style="font-size: 40px; color: #6c757d;"></i>
+                        <div>
+                            <p class="small p-2 ms-3 mb-1 rounded-3 bg-body-tertiary">Bot is typing...</p>
+                        </div>
+                    </div>
+                `;
+                $('#chat2 .card-body').append(typingIndicator);
 
                 // Scroll to the bottom of the chat box
                 scrollToBottom();
 
+                // Clear the input fields
+                $('input[name="instruction"]').val('');
+                $('input[name="file"]').val(''); // Clear the file input
+
                 // Send the message to the server asynchronously using AJAX
                 $.ajax({
                     type: 'POST',
-                    url: '/',
+                    url: '/', // Backend endpoint to handle the form submission
                     data: formData,
                     processData: false,
                     contentType: false, // Necessary for FormData
-                    success: function(response) {
-                        var newMessages = response.messages;
+                    success: function (response) {
+                        // Remove "bot is typing" indicator
+                        $('.typing-indicator').remove();
 
                         // Handle only the latest bot message
-                        var latestBotMessage = newMessages
+                        var latestBotMessage = response.messages
                             .filter(message => message.sender === "start")
                             .pop();
 
@@ -200,12 +233,16 @@
                             scrollToBottom();
                         }
                     },
-                    error: function() {
+                    error: function () {
+                        // Remove "bot is typing" indicator in case of error
+                        $('.typing-indicator').remove();
                         console.error('Failed to send or receive messages.');
                     }
                 });
             });
         });
+
+
 
 
     </script>

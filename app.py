@@ -35,6 +35,8 @@ def format_message(message):
 
 @app.route('/', methods=['GET', 'POST'])
 def chat():
+    global chain, llm, embedding_model, retriever  # Declare global variables
+    
     if request.method == 'POST':
         user_input = request.form.get('instruction', '')
         file = request.files.get('file')
@@ -67,6 +69,7 @@ def chat():
             # Reindex the file and update retriever
             retriever = process_documents(app.config['UPLOAD_FOLDER'], embedding_model)
             print(f"File '{filename}' indexed.")
+            chain = load_qa_chain(retriever, llm, prompt)
 
             # Add user message indicating file upload
             user_message = f"File uploaded: {filename}"
@@ -100,6 +103,7 @@ def chat():
             # Reindex the file and process based on the instruction
             retriever = process_documents(app.config['UPLOAD_FOLDER'], embedding_model)
             print(f"File '{filename}' indexed.")
+            chain = load_qa_chain(retriever, llm, prompt)
 
             # Add user message indicating file upload and instruction
             user_message = f"File uploaded: {filename} with instruction: {user_input}"
@@ -126,6 +130,7 @@ def chat():
 
 
 if __name__ == '__main__':
+    global llm, embedding_model, retriever, chain
 
     folder_path = 'documents'
 
@@ -150,9 +155,8 @@ if __name__ == '__main__':
     ### Response:
     """
     prompt = PromptTemplate.from_template(template)
-
     chain = load_qa_chain(retriever, llm, prompt)
 
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000)
 
     #
